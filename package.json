@@ -1,0 +1,26 @@
+{
+  "name": "express-sql-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "mocha",
+    "dev": "DEBUG=app nodemon app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^8.1.0",
+    "express": "^4.17.1",
+    "mysql": "^2.17.1"
+  },
+  "devDependencies": {
+    "chalk": "^2.4.2",
+    "debug": "^4.1.1",
+    "eslint": "^6.5.1",
+    "mocha": "^6.2.1",
+    "morgan": "^1.9.1",
+    "nodemon": "^1.19.3",
+    "request": "^2.88.0"
+  }
+}
