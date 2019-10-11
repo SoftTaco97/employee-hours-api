@@ -2,16 +2,16 @@
  * File for server logic
  * 
  * @author Jared Martinez
- * @version 10/07/2019
+ * @version 10/08/2019
  */
 
 const connection = require('./connection.js');
 
 const badRequest = (res, message) => {
-    res.json({ error: message });
+    res.status(401).json({ error: message });
 }
 
-const getEmployeeName = (req) => req.params.employee;
+const getEmployee = (req) => req.params.employee;
 /**
  * Function for validating that the request was valid
  * 
@@ -21,11 +21,30 @@ const getEmployeeName = (req) => req.params.employee;
  * 
  * @return { void }
  */
-const validateRequest = (req, res, next) => {
-    if(getEmployeeName(req) === undefined) {
+const validateRequest = async (req, res, next) => {
+    // Getting employee param
+    const employee = getEmployee(req);
+
+    // Validating that the employee was given
+    if(employee === undefined) {
         return badRequest(res, 'Must provide an employee.');
     }
-    next();
+
+    // Pulling info from database
+    try {
+        const employeeData = await connection.getEmployeeData(employee);
+
+        // Validating that the info is there
+        if(employeeData && employeeData[0]) {
+            req.params.employee = employeeData[0]; // Pushing the info from the db into the request
+            next(); // Moving along
+            return;
+        }
+        badRequest(res, 'Employee not found.'); // Sending back that the employee is not there
+    } catch(err) {
+        badRequest(res, 'Encountered an error, try again later.'); // Error handling
+        return;
+    }
 };
 
 /**
@@ -37,23 +56,16 @@ const validateRequest = (req, res, next) => {
  * 
  * @return { void }
  */
-const getTimeForWeek = async (req, res, next) => {
-    const employee = getEmployeeName(req);
+const getTimeForWeek = (req, res, next) => {
+    // Getting employee information
+    const employee = getEmployee(req);
     
-    try {
-        const employeeData = await connection.getEmployeeData(employee);
-        if(employeeData && employeeData[0]) {
-            const hoursForWeek = employeeData[0].hours_week;
-            res.json({
-                name: employee,
-                week: hoursForWeek
-            }); 
-            return;
-        }
-        badRequest(res, 'Employee not found.');
-    } catch(err) {
-        badRequest(res, 'Encountered an error, try again later.');
-    }
+    // Sending back employee information
+    res.json({
+        name: employee.employee_name,
+        week: employee.hours_week
+    }); 
+    return; 
 }
 
 /**
@@ -65,23 +77,16 @@ const getTimeForWeek = async (req, res, next) => {
  * 
  * @return { void }
  */
-const getTimeForDay = async (req, res, next) => {
-    const employee = getEmployeeName(req);
-    
-    try {
-        const employeeData = await connection.getEmployeeData(employee);
-        if(employeeData && employeeData[0]) {
-            const hoursForDay = employeeData[0].hours_day;
-            res.json({
-                name: employee,
-                day: hoursForDay
-            }); 
-            return;
-        }
-        badRequest(res, 'Employee not found.');
-    } catch(err) {
-        badRequest(res, 'Encountered an error, try again later.');
-    }
+const getTimeForDay = (req, res, next) => {
+    // Getting employee information
+    const employee = getEmployee(req);
+
+    // Sending back employee information
+    res.json({
+        name: employee.employee_name,
+        day: employee.hours_today
+    }); 
+    return;
 }
 
 /**
@@ -91,28 +96,13 @@ const getTimeForDay = async (req, res, next) => {
  * @param { object } res 
  * @param { function } next 
  */
-const getEmployeeOverview = async (req, res, next) => {
-    // Getting employee name from url
-    const employee = getEmployeeName(req);
+const getEmployeeOverview = (req, res, next) => {
+    // Getting employee information
+    const employee = getEmployee(req);
 
-    try {
-        const employeeData = await connection.getEmployeeData(employee);
-
-        if(employeeData && employeeData[0]) {
-            const hoursForDay = employeeData[0].hours_today;
-            const hoursForWeek = employeeData[0].hours_week;
-
-            res.json({
-                name: employee,
-                today: hoursForDay,
-                week: hoursForWeek
-            }); 
-            return;
-        }
-        badRequest(res, 'Employee not found.');
-    } catch {
-        badRequest(res, 'Encountered an error, try again later.');
-    }
+    // Sending back employee information
+    res.json(employee);
+    return;
 }
 
 module.exports = {
