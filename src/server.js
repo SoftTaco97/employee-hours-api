@@ -32,7 +32,7 @@ const validateRequest = async (req, res, next) => {
 
     // Pulling info from database
     try {
-        const employeeData = await connection.getEmployeeData(employee);
+        const employeeData = await connection.getEmployeeData(employee.toLowerCase());
 
         // Validating that the info is there
         if(employeeData && employeeData[0]) {
